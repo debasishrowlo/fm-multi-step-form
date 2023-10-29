@@ -21,8 +21,7 @@ const initialValues = {
 }
 
 const App = () => {
-  // const [activeStep, setActiveStep] = useState(1)
-  const [activeStep, setActiveStep] = useState(5)
+  const [step, setStep] = useState(1)
   const plans = [
     {
       name: "Arcade",
@@ -87,7 +86,7 @@ const App = () => {
         .length(11, "Must have 10 digits"),
     }),
     onSubmit: (values) => {
-      setActiveStep(activeStep + 1)
+      setStep(step + 1)
     },
   })
 
@@ -119,16 +118,16 @@ const App = () => {
   }
 
   const handleBackButtonClick = () => {
-    setActiveStep(activeStep - 1)
+    setStep(step - 1)
   }
 
   const handleNextButtonClick = () => {
-    if (activeStep === 1) {
+    if (step === 1) {
       form.submitForm()
       return
     }
 
-    setActiveStep(activeStep + 1)
+    setStep(step + 1)
   }
 
   const hasError = (name: keyof typeof initialValues) => {
@@ -188,9 +187,9 @@ const App = () => {
               {["Your Info", "Select Plan", "Add-Ons", "Summary"].map(
                 (name, index) => {
                   const currentStep = index + 1
-                  let isActive = currentStep === activeStep
+                  let isActive = currentStep === step
 
-                  if (currentStep === 4 && activeStep === 5) {
+                  if (currentStep === 4 && step === 5) {
                     isActive = true
                   }
 
@@ -222,11 +221,11 @@ const App = () => {
             </div>
           </div>
           <div className="flex grow flex-col justify-between md:ml-4 overflow-hidden">
-            {activeStep < 5 ? (
+            {(step < 5) ? (
               <>
                 <div className="h-full px-4 pb-2 md:px-20 flex flex-col overflow-y-hidden">
                   <div className="px-6 py-8 flex flex-col bg-white rounded-10 shadow-2xl overflow-y-hidden md:px-0 md:shadow-none">
-                    {activeStep === 1 && (
+                    {(step === 1) && (
                       <form onSubmit={handleSubmit}>
                         <h1 className="text-24 font-bold text-blue-400 md:text-32">
                           Personal Info
@@ -321,7 +320,7 @@ const App = () => {
                         <input type="submit" className="hidden" />
                       </form>
                     )}
-                    {activeStep === 2 && (
+                    {(step === 2) && (
                       <>
                         <h1 className="text-24 font-bold text-blue-400 md:text-32">
                           Select your plan
@@ -409,7 +408,7 @@ const App = () => {
                         </div>
                       </>
                     )}
-                    {activeStep === 3 && (
+                    {(step === 3) && (
                       <>
                         <h1 className="text-24 font-bold text-blue-400 md:text-32">
                           Pick add-ons
@@ -468,7 +467,7 @@ const App = () => {
                         </div>
                       </>
                     )}
-                    {activeStep === 4 && (
+                    {(step === 4) && (
                       <>
                         <h1 className="text-24 font-bold text-blue-400 md:text-32">
                           Finishing up
@@ -486,7 +485,7 @@ const App = () => {
                               <button
                                 type="button"
                                 className="text-14 leading-5 text-gray-400 hover:text-purple-200 underline transition-colors"
-                                onClick={() => setActiveStep(2)}
+                                onClick={() => setStep(2)}
                               >
                                 Change
                               </button>
@@ -533,7 +532,7 @@ const App = () => {
                 </div>
                 <div className="p-4 flex items-center justify-between bg-white md:px-20">
                   <div>
-                    {activeStep > 1 && (
+                    {(step > 1) && (
                       <button
                         type="button"
                         className="text-14 font-medium text-gray-400 hover:text-blue-400 transition-colors md:text-16"
@@ -549,12 +548,12 @@ const App = () => {
                       px-4 py-3 text-14 font-medium text-white rounded-4 transition-colors
                       md:px-6 md:py-4 md:text-16 md:rounded-8
                     `, {
-                      "bg-blue-400 hover:bg-blue-300": activeStep < 4,
-                      "bg-purple-200 hover:bg-purple-100": activeStep === 4,
+                      "bg-blue-400 hover:bg-blue-300": step < 4,
+                      "bg-purple-200 hover:bg-purple-100": step === 4,
                     })}
                     onClick={() => handleNextButtonClick()}
                   >
-                    {activeStep < 4 ? "Next Step" : "Confirm"}
+                    {step < 4 ? "Next Step" : "Confirm"}
                   </button>
                 </div>
               </>
