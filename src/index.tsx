@@ -228,16 +228,16 @@ const App = () => {
               )}
             </div>
           </div>
-          <div className="flex grow flex-col justify-between md:ml-4 overflow-hidden">
-            <div className="h-full px-4 pb-2 md:px-20 flex flex-col overflow-y-hidden">
-              <div className="grow flex flex-col relative overflow-hidden">
+          <div className="flex grow flex-col justify-between md:ml-4">
+            <div className="h-full px-4 pb-2 md:px-20 flex flex-col">
+              <div className="grow flex flex-col relative">
                 <Transition
                   show={step === 1}
-                  className="px-6 py-8 flex flex-col bg-white rounded-10 shadow-2xl overflow-y-hidden md:px-0 md:shadow-none"
+                  className="px-6 py-8 flex flex-col bg-white rounded-10 shadow-2xl overflow-y-auto md:px-0 md:shadow-none"
                   enter="absolute transition duration-500"
                   enterFrom="-translate-x-4 opacity-0"
                   enterTo="translate-x-0 opacity-100"
-                  leave="absolute transition duration-500"
+                  leave="absolute transition duration-300"
                   leaveFrom="translate-x-0 opacity-100"
                   leaveTo="-translate-x-4 opacity-0"
                 >
@@ -337,11 +337,11 @@ const App = () => {
                 </Transition>
                 <Transition
                   show={step === 2}
-                  className="w-full max-h-full px-6 py-8 flex flex-col bg-white rounded-10 shadow-2xl overflow-y-hidden md:px-0 md:shadow-none"
-                  enter="absolute transition duration-500"
+                  className="absolute inset-0 w-full max-h-full px-6 py-8 flex flex-col bg-white rounded-10 shadow-2xl md:px-0 md:shadow-none"
+                  enter="transition duration-500"
                   enterFrom="translate-x-4 opacity-0"
                   enterTo="translate-x-0 opacity-100"
-                  leave="absolute transition duration-500"
+                  leave="transition duration-300"
                   leaveFrom="translate-x-0 opacity-100"
                   leaveTo="translate-x-4 opacity-0"
                 >
@@ -430,65 +430,72 @@ const App = () => {
                     </p>
                   </div>
                 </Transition>
-                {(step === 3) && (
-                  <div className="px-6 py-8 flex flex-col bg-white rounded-10 shadow-2xl overflow-y-hidden md:px-0 md:shadow-none">
-                    <h1 className="text-24 font-bold text-blue-400 md:text-32">
-                      Pick add-ons
-                    </h1>
-                    <p className="text-16 leading-6 text-gray-400 md:mt-2">
-                      Add-ons help enhance your gaming experience.
-                    </p>
-                    <div className="mt-6 space-y-3 md:mt-9 md:space-y-4">
-                      {addons.map((addon, index) => {
-                        const price = yearlyPlanActive
-                          ? addon.yearlyPrice
-                          : addon.monthlyPrice
+                <Transition
+                  show={step === 3}
+                  className="px-6 py-8 flex flex-col bg-white rounded-10 shadow-2xl overflow-y-hidden md:px-0 md:shadow-none"
+                  enter="transition duration-500"
+                  enterFrom="translate-x-4 opacity-0"
+                  enterTo="translate-x-0 opacity-100"
+                  leave="transition duration-300"
+                  leaveFrom="translate-x-0 opacity-100"
+                  leaveTo="translate-x-4 opacity-0"
+                >
+                  <h1 className="text-24 font-bold text-blue-400 md:text-32">
+                    Pick add-ons
+                  </h1>
+                  <p className="text-16 leading-6 text-gray-400 md:mt-2">
+                    Add-ons help enhance your gaming experience.
+                  </p>
+                  <div className="mt-6 space-y-3 md:mt-9 md:space-y-4">
+                    {addons.map((addon, index) => {
+                      const price = yearlyPlanActive
+                        ? addon.yearlyPrice
+                        : addon.monthlyPrice
 
-                        return (
-                          <button
-                            type="button"
-                            className={classnames(
-                              "px-4 py-3 w-full flex justify-between items-center border hover:border-purple-200 text-left rounded-8 md:px-6 md:py-4.5 transition",
-                              {
-                                "border-purple-200 bg-gray-100":
-                                  addon.isActive,
-                                "border-gray-300": !addon.isActive,
-                              }
-                            )}
-                            key={index}
-                            onClick={() => toggleAddon(index)}
-                          >
-                            <div className="flex items-center">
-                              <div
-                                className={classnames(
-                                  "w-5 h-5 flex shrink-0 items-center justify-center border rounded-4",
-                                  {
-                                    "border-purple-200 bg-purple-200":
-                                      addon.isActive,
-                                    "border-gray-300": !addon.isActive,
-                                  }
-                                )}
-                              >
-                                <img src={checkMarkIcon} />
-                              </div>
-                              <div className="ml-4">
-                                <p className="text-14 font-medium text-blue-400 md:text-16">
-                                  {addon.name}
-                                </p>
-                                <p className="text-12 leading-5 text-gray-400 md:text-14">
-                                  {addon.description}
-                                </p>
-                              </div>
+                      return (
+                        <button
+                          type="button"
+                          className={classnames(
+                            "px-4 py-3 w-full flex justify-between items-center border hover:border-purple-200 text-left rounded-8 md:px-6 md:py-4.5 transition",
+                            {
+                              "border-purple-200 bg-gray-100":
+                                addon.isActive,
+                              "border-gray-300": !addon.isActive,
+                            }
+                          )}
+                          key={index}
+                          onClick={() => toggleAddon(index)}
+                        >
+                          <div className="flex items-center">
+                            <div
+                              className={classnames(
+                                "w-5 h-5 flex shrink-0 items-center justify-center border rounded-4",
+                                {
+                                  "border-purple-200 bg-purple-200":
+                                    addon.isActive,
+                                  "border-gray-300": !addon.isActive,
+                                }
+                              )}
+                            >
+                              <img src={checkMarkIcon} />
                             </div>
-                            <p className="text-12 leading-50 text-purple-200 md:text-14">
-                              +${price}/{duration}
-                            </p>
-                          </button>
-                        )
-                      })}
-                    </div>
+                            <div className="ml-4">
+                              <p className="text-14 font-medium text-blue-400 md:text-16">
+                                {addon.name}
+                              </p>
+                              <p className="text-12 leading-5 text-gray-400 md:text-14">
+                                {addon.description}
+                              </p>
+                            </div>
+                          </div>
+                          <p className="text-12 leading-50 text-purple-200 md:text-14">
+                            +${price}/{duration}
+                          </p>
+                        </button>
+                      )
+                    })}
                   </div>
-                )}
+                </Transition>
                 {(step === 4) && (
                   <div className="px-6 py-8 flex flex-col bg-white rounded-10 shadow-2xl overflow-y-hidden md:px-0 md:shadow-none">
                     <h1 className="text-24 font-bold text-blue-400 md:text-32">
@@ -568,7 +575,7 @@ const App = () => {
               </div>
             </div>
             {(step < 5) && (
-              <div className="p-4 flex items-center justify-between bg-white md:px-20">
+              <div className="relative z-1 p-4 flex items-center justify-between bg-white md:px-20">
                 <button
                   type="button"
                   className={classnames("text-14 font-medium text-gray-400 hover:text-blue-400 transition md:text-16", {
