@@ -1,4 +1,4 @@
-import { useState, FocusEvent, ChangeEvent } from "react"
+import { useMemo, useState, FocusEvent, ChangeEvent } from "react"
 import { createRoot } from "react-dom/client"
 import classnames from "classnames"
 import { useFormik } from "formik"
@@ -16,16 +16,14 @@ import thankYouIcon from "./assets/icon-thank-you.svg"
 import "./index.css"
 
 const initialValues = {
-  // name: "",
-  // email: "",
-  // phoneNumber: "",
-  name: "John Doe",
-  email: "johndoe@gmail.com",
-  phoneNumber: "+1234567890",
+  name: "",
+  email: "",
+  phoneNumber: "",
 }
 
 const App = () => {
   const [step, setStep] = useState(1)
+
   const plans = [
     {
       name: "Arcade",
@@ -57,7 +55,7 @@ const App = () => {
       description: "Access to multiplayer games",
       monthlyPrice: 1,
       yearlyPrice: 10,
-      isActive: true,
+      isActive: false,
     },
     {
       name: "Larger storage",
@@ -90,7 +88,11 @@ const App = () => {
         .length(11, "Must have 10 digits"),
     }),
     onSubmit: (values) => {
-      setStep(step + 1)
+      const previousStep = step
+      const nextStep = step + 1
+
+      updateTransitionProps(previousStep, nextStep)
+      setStep(nextStep)
     },
   })
 
@@ -101,12 +103,80 @@ const App = () => {
     name: plans[selectedPlanIndex].name,
     price: yearlyPlanActive ? plans[selectedPlanIndex].yearlyPrice : plans[selectedPlanIndex].monthlyPrice,
   }
+
   const activeAddons = addons.filter(addon => addon.isActive)
-  const duration = yearlyPlanActive ? "yr" : "mo"
-  const totalPrice = activePlan.price + activeAddons.reduce((acc, addon) => {
-    const price = yearlyPlanActive ? addon.yearlyPrice : addon.monthlyPrice
-    return acc + price
-  }, 0)
+  const totalPrice = useMemo(() => {
+    return activePlan.price + activeAddons.reduce((acc, addon) => {
+      const price = yearlyPlanActive ? addon.yearlyPrice : addon.monthlyPrice
+      return acc + price
+    }, 0)
+  }, [activePlan, activeAddons, yearlyPlanActive])
+
+  const billingDuration = yearlyPlanActive ? "yr" : "mo"
+
+  const commonTransitionProps = {
+    enter: "transition duration-500",
+    leave: "transition duration-350",
+  }
+
+  const defaultTransitionProps = Array.from(Array(5).keys()).reduce((acc, cur) => {
+    return {
+      ...acc,
+      [cur + 1]: {
+        enterFrom: "",
+        enterTo: "",
+        leaveFrom: "",
+        leaveTo: "",
+      },
+    }
+  }, {})
+  const [transitionProps, setTransitionProps] = useState<{
+    [key: string]: {
+      enterFrom: string,
+      enterTo: string,
+      leaveFrom: string,
+      leaveTo: string,
+    }
+  }>(defaultTransitionProps)
+
+  const updateTransitionProps = (startStep:number, endStep:number) => {
+    const fadeInLeft = {
+      enterFrom: "-translate-x-4 opacity-0",
+      enterTo: "translate-x-0 opacity-100",
+    }
+    const fadeInRight = {
+      enterFrom: "translate-x-4 opacity-0",
+      enterTo: "translate-x-0 opacity-100",
+    }
+    const fadeOutLeft = {
+      leaveFrom: "translate-x-0 opacity-100",
+      leaveTo: "-translate-x-4 opacity-0",
+    }
+    const fadeOutRight = {
+      leaveFrom: "translate-x-0 opacity-100",
+      leaveTo: "translate-x-4 opacity-0",
+    }
+
+    let startStepTransition = { ...fadeOutLeft }
+    let endStepTransition = { ...fadeInRight }
+
+    if (startStep > endStep) {
+      startStepTransition = { ...fadeOutRight }
+      endStepTransition = { ...fadeInLeft }
+    }
+
+    setTransitionProps({
+      ...transitionProps,
+      [startStep]: {
+        ...transitionProps[startStep],
+        ...startStepTransition,
+      },
+      [endStep]: {
+        ...transitionProps[endStep],
+        ...endStepTransition,
+      },
+    })
+  }
 
   const toggleAddon = (index:number) => {
     setAddons(addons.map((addon, addonIndex) => {
@@ -126,7 +196,10 @@ const App = () => {
       return
     }
 
-    setStep(step - 1)
+    const previousStep = step
+    const nextStep = step - 1
+    updateTransitionProps(previousStep, nextStep)
+    setStep(nextStep)
   }
 
   const handleNextButtonClick = () => {
@@ -135,7 +208,10 @@ const App = () => {
       return
     }
 
-    setStep(step + 1)
+    const previousStep = step
+    const nextStep = step + 1
+    updateTransitionProps(previousStep, nextStep)
+    setStep(nextStep)
   }
 
   const hasError = (name: keyof typeof initialValues) => {
@@ -191,7 +267,7 @@ const App = () => {
         <div className="container mx-auto p-0 relative z-10 h-screen flex flex-col md:h-auto md:my-auto md:p-4 md:flex-row md:bg-white md:rounded-16 md:shadow-2xl">
           <div className="relative w-full md:max-w-[274px]">
             <img src={bgSidebarDesktop} className="hidden md:block" />
-            <div className="static inset-0 py-8 flex justify-center space-x-4 md:absolute md:block md:space-x-0 md:space-y-8">
+            <div className="py-8 flex justify-center space-x-4 md:absolute md:inset-0 md:block md:space-x-0 md:space-y-8">
               {["Your Info", "Select Plan", "Add-Ons", "Summary"].map(
                 (name, index) => {
                   const currentStep = index + 1
@@ -229,17 +305,13 @@ const App = () => {
             </div>
           </div>
           <div className="flex grow flex-col justify-between md:ml-4">
-            <div className="h-full px-4 pb-2 md:px-20 flex flex-col">
+            <div className="h-full px-4 pb-2 flex flex-col md:px-20 md:pb-0">
               <div className="grow flex flex-col relative">
                 <Transition
                   show={step === 1}
-                  className="px-6 py-8 flex flex-col bg-white rounded-10 shadow-2xl overflow-y-auto md:px-0 md:shadow-none"
-                  enter="absolute transition duration-500"
-                  enterFrom="-translate-x-4 opacity-0"
-                  enterTo="translate-x-0 opacity-100"
-                  leave="absolute transition duration-300"
-                  leaveFrom="translate-x-0 opacity-100"
-                  leaveTo="-translate-x-4 opacity-0"
+                  className="absolute inset-0 max-h-full px-6 py-8 flex flex-col bg-white rounded-10 shadow-2xl overflow-y-auto md:px-0 md:pb-0 md:shadow-none"
+                  {...commonTransitionProps}
+                  {...transitionProps["1"]}
                 >
                   <form onSubmit={handleSubmit}>
                     <h1 className="text-24 font-bold text-blue-400 md:text-32">
@@ -338,12 +410,8 @@ const App = () => {
                 <Transition
                   show={step === 2}
                   className="absolute inset-0 w-full max-h-full px-6 py-8 flex flex-col bg-white rounded-10 shadow-2xl md:px-0 md:shadow-none"
-                  enter="transition duration-500"
-                  enterFrom="translate-x-4 opacity-0"
-                  enterTo="translate-x-0 opacity-100"
-                  leave="transition duration-300"
-                  leaveFrom="translate-x-0 opacity-100"
-                  leaveTo="translate-x-4 opacity-0"
+                  {...commonTransitionProps}
+                  {...transitionProps["2"]}
                 >
                   <h1 className="text-24 font-bold text-blue-400 md:text-32">
                     Select your plan
@@ -377,7 +445,7 @@ const App = () => {
                               {plan.name}
                             </p>
                             <p className="mt-1.5 text-14 text-gray-400">
-                              ${price}/{duration}
+                              ${price}/{billingDuration}
                             </p>
                             {yearlyPlanActive && (
                               <p className="mt-1 text-12 text-blue-400">
@@ -432,13 +500,9 @@ const App = () => {
                 </Transition>
                 <Transition
                   show={step === 3}
-                  className="px-6 py-8 flex flex-col bg-white rounded-10 shadow-2xl overflow-y-hidden md:px-0 md:shadow-none"
-                  enter="transition duration-500"
-                  enterFrom="translate-x-4 opacity-0"
-                  enterTo="translate-x-0 opacity-100"
-                  leave="transition duration-300"
-                  leaveFrom="translate-x-0 opacity-100"
-                  leaveTo="translate-x-4 opacity-0"
+                  className="absolute inset-0 max-h-full px-6 py-8 flex flex-col bg-white rounded-10 shadow-2xl overflow-y-hidden md:px-0 md:shadow-none"
+                  {...commonTransitionProps}
+                  {...transitionProps["3"]}
                 >
                   <h1 className="text-24 font-bold text-blue-400 md:text-32">
                     Pick add-ons
@@ -489,93 +553,99 @@ const App = () => {
                             </div>
                           </div>
                           <p className="text-12 leading-50 text-purple-200 md:text-14">
-                            +${price}/{duration}
+                            +${price}/{billingDuration}
                           </p>
                         </button>
                       )
                     })}
                   </div>
                 </Transition>
-                {(step === 4) && (
-                  <div className="px-6 py-8 flex flex-col bg-white rounded-10 shadow-2xl overflow-y-hidden md:px-0 md:shadow-none">
-                    <h1 className="text-24 font-bold text-blue-400 md:text-32">
-                      Finishing up
-                    </h1>
-                    <p className="text-16 leading-6 text-gray-400 md:mt-2">
-                      Double-check everything looks OK before confirming.
-                    </p>
-                    <div className="mt-5 p-4 bg-gray-100 rounded-8 md:mt-9 md:px-6">
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <p className="text-14 font-medium text-blue-400 md:text-16">
-                            {activePlan.name} (
-                            {yearlyPlanActive ? "Yearly" : "Monthly"})
-                          </p>
-                          <button
-                            type="button"
-                            className="text-14 leading-5 text-gray-400 hover:text-purple-200 underline transition-colors"
-                            onClick={() => setStep(2)}
-                          >
-                            Change
-                          </button>
-                        </div>
-                        <p className="text-14 leading-5 font-bold text-blue-400 md:text-16">
-                          ${activePlan.price}/{duration}
+                <Transition
+                  show={step === 4}
+                  className="absolute inset-0 max-h-full px-6 py-8 flex flex-col bg-white rounded-10 shadow-2xl overflow-y-hidden md:px-0 md:shadow-none"
+                  {...commonTransitionProps}
+                  {...transitionProps["4"]}
+                >
+                  <h1 className="text-24 font-bold text-blue-400 md:text-32">
+                    Finishing up
+                  </h1>
+                  <p className="text-16 leading-6 text-gray-400 md:mt-2">
+                    Double-check everything looks OK before confirming.
+                  </p>
+                  <div className="mt-5 p-4 bg-gray-100 rounded-8 md:mt-9 md:px-6">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <p className="text-14 font-medium text-blue-400 md:text-16">
+                          {activePlan.name} (
+                          {yearlyPlanActive ? "Yearly" : "Monthly"})
                         </p>
+                        <button
+                          type="button"
+                          className="text-14 leading-5 text-gray-400 hover:text-purple-200 underline transition-colors"
+                          onClick={() => setStep(2)}
+                        >
+                          Change
+                        </button>
                       </div>
-                      {activeAddons.length > 0 && (
-                        <div className="mt-3 pt-3 space-y-3 border-t border-gray-400/20 md:mt-6 md:space-y-4">
-                          {activeAddons.map((addon, index) => {
-                            const price = yearlyPlanActive
-                              ? addon.yearlyPrice
-                              : addon.monthlyPrice
+                      <p className="text-14 leading-5 font-bold text-blue-400 md:text-16">
+                        ${activePlan.price}/{billingDuration}
+                      </p>
+                    </div>
+                    {activeAddons.length > 0 && (
+                      <div className="mt-3 pt-3 space-y-3 border-t border-gray-400/20 md:mt-6 md:space-y-4">
+                        {activeAddons.map((addon, index) => {
+                          const price = yearlyPlanActive
+                            ? addon.yearlyPrice
+                            : addon.monthlyPrice
 
-                            return (
-                              <div
-                                className="flex items-center justify-between"
-                                key={index}
-                              >
-                                <p className="text-14 leading-5 text-gray-400">
-                                  {addon.name}
-                                </p>
-                                <p className="text-14 leading-5 text-blue-400">
-                                  ${price}/{duration}
-                                </p>
-                              </div>
-                            )
-                          })}
-                        </div>
-                      )}
-                    </div>
-                    <div className="mt-6 px-4 flex items-center justify-between">
-                      <p className="text-14 leading-5 text-gray-400">
-                        Total (per month)
-                      </p>
-                      <p className="text-16 leading-5 font-bold text-purple-200 md:text-20">
-                        ${totalPrice}/{duration}
-                      </p>
-                    </div>
+                          return (
+                            <div
+                              className="flex items-center justify-between"
+                              key={index}
+                            >
+                              <p className="text-14 leading-5 text-gray-400">
+                                {addon.name}
+                              </p>
+                              <p className="text-14 leading-5 text-blue-400">
+                                ${price}/{billingDuration}
+                              </p>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
                   </div>
-                )}
-                {(step === 5) && (
-                  <div className="px-6 py-8 flex flex-col bg-white rounded-10 shadow-2xl overflow-y-hidden md:h-full md:px-0 md:shadow-none">
-                    <div className="h-full py-12 flex flex-col justify-center text-center">
-                      <img src={thankYouIcon} className="w-14 mx-auto md:w-auto" />
-                      <p className="mt-6 text-24 font-bold text-blue-400 md:mt-8 md:text-32">
-                        Thank you!
-                      </p>
-                      <p className="mt-2 text-16 leading-6 text-gray-400 md:mt-3.5">
-                        Thanks for confirming your subscription! We hope you have
-                        fun using our platform. If you ever need support, please
-                        feel free to email us at support@loremgaming.com.
-                      </p>
-                    </div>
+                  <div className="mt-6 px-4 flex items-center justify-between">
+                    <p className="text-14 leading-5 text-gray-400">
+                      Total (per month)
+                    </p>
+                    <p className="text-16 leading-5 font-bold text-purple-200 md:text-20">
+                      ${totalPrice}/{billingDuration}
+                    </p>
                   </div>
-                )}
+                </Transition>
+                <Transition
+                  show={step === 5}
+                  className="absolute inset-0 max-h-full px-6 py-8 flex flex-col bg-white rounded-10 shadow-2xl overflow-y-hidden md:px-0 md:shadow-none"
+                  {...commonTransitionProps}
+                  {...transitionProps["5"]}
+                >
+                  <div className="h-full py-12 flex flex-col justify-center text-center">
+                    <img src={thankYouIcon} className="w-14 mx-auto md:w-auto" />
+                    <p className="mt-6 text-24 font-bold text-blue-400 md:mt-8 md:text-32">
+                      Thank you!
+                    </p>
+                    <p className="mt-2 text-16 leading-6 text-gray-400 md:mt-3.5">
+                      Thanks for confirming your subscription! We hope you have
+                      fun using our platform. If you ever need support, please
+                      feel free to email us at support@loremgaming.com.
+                    </p>
+                  </div>
+                </Transition>
               </div>
             </div>
             {(step < 5) && (
-              <div className="relative z-1 p-4 flex items-center justify-between bg-white md:px-20">
+              <div className="relative z-10 p-4 flex items-center justify-between bg-white md:px-20">
                 <button
                   type="button"
                   className={classnames("text-14 font-medium text-gray-400 hover:text-blue-400 transition md:text-16", {
