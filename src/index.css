@@ -1,7 +1,7 @@
 @tailwind base;
 
 body {
-  @apply font-ubuntu text-black;
+  @apply text-black;
 }
 
 @tailwind components;
