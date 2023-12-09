@@ -85,9 +85,9 @@ const App = () => {
       phoneNumber: yup
         .string()
         .required("Phone Number is required")
-        .length(11, "Must have 10 digits"),
+        .length(14, "Must have 10 digits"),
     }),
-    onSubmit: (values) => {
+    onSubmit: () => {
       const previousStep = step
       const nextStep = step + 1
 
@@ -178,6 +178,10 @@ const App = () => {
     })
   }
 
+  const handleNameChange = (e:ChangeEvent<HTMLInputElement>) => {
+    form.setFieldValue("name", e.target.value.replace(/[^a-zA-z ]/g, ""))
+  }
+
   const toggleAddon = (index:number) => {
     setAddons(addons.map((addon, addonIndex) => {
       if (addonIndex !== index) {
@@ -219,18 +223,28 @@ const App = () => {
   }
 
   const handlePhoneNumberChange = (event:ChangeEvent<HTMLInputElement>) => {
-    const stateValue = form.values.phoneNumber
-    let value = event.target.value.replace(/ /g, "")
+    const value = event.target.value.trim().replace(/ /g, "")
 
-    if (stateValue === "") {
-      value = "+1" + value
+    let newValue = "+1"
+
+    let lastSliceIndex = null
+    if (value.length > 2) {
+      lastSliceIndex = 2
+    } 
+    if (value.length > 5) {
+      newValue += " " + value.slice(2, 5)
+      lastSliceIndex = 5
+    } 
+    if (value.length > 8) {
+      newValue += " " + value.slice(5, 8)
+      lastSliceIndex = 8
     }
 
-    if (form.values.phoneNumber === value) {
-      value = value.slice(0, value.length - 1)
+    if (lastSliceIndex !== null) {
+      newValue += " " + value.slice(lastSliceIndex)
     }
 
-    form.setFieldValue("phoneNumber", value)
+    form.setFieldValue("phoneNumber", newValue)
   }
 
   const handlePhoneNumberFocus = () => {
@@ -245,17 +259,6 @@ const App = () => {
     if (form.values.phoneNumber === "+1") {
       form.setFieldValue("phoneNumber", "", true)
     }
-  }
-
-  const addSpacesToPhoneNumber = (phoneNumber:string) => {
-    let newPhoneNumber = ""
-
-    for (let i = 0; i < phoneNumber.length; i++) {
-      const after = (i === 1 || i === 4 || i === 7) ? " " : ""
-      newPhoneNumber += phoneNumber[i] + after
-    }
-
-    return newPhoneNumber
   }
 
   return (
@@ -342,7 +345,7 @@ const App = () => {
                           })}
                           placeholder="e.g. Stephen King"
                           name="name"
-                          onChange={handleChange}
+                          onChange={handleNameChange}
                           onBlur={handleBlur}
                           value={form.values.name}
                         />
@@ -399,7 +402,7 @@ const App = () => {
                           onChange={handlePhoneNumberChange}
                           onFocus={handlePhoneNumberFocus}
                           onBlur={handlePhoneNumberBlur}
-                          value={addSpacesToPhoneNumber(form.values.phoneNumber)}
+                          value={form.values.phoneNumber}
                           maxLength={14}
                         />
                       </div>
