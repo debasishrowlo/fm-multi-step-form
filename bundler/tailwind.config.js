@@ -3,21 +3,35 @@ const globEntries = require('webpack-glob-entries-extended')
 
 const paths = require("./paths.js")
 
-const fontSize = {}
-const minFontSize = 12
-const maxFontSize = 70
-const base = 16
-let i = minFontSize
-while (i <= maxFontSize) {
-  fontSize[i] = `${i / base}rem`
-  i += 2
+const pxToRem = (px, base = 16) => {
+  return `${px / base}rem`
 }
 
-const borderRadius = [0, 2, 4, 6, 8, 10, 12, 16, 24].reduce((acc, cur) => {
-  acc[cur] = `${cur / base}rem`
-  return acc
-}, {})
-borderRadius["full"] = "9999px"
+const generateFontSize = (min, max) => {
+  const fontSize = {}
+
+  let i = min
+  while (i <= max) {
+    fontSize[i] = pxToRem(i)
+    i += 2
+  }
+
+  return fontSize
+}
+
+const generateBorderRadius = (max) => {
+  const borderRadius = Array.from(Array(max + 1).keys()).reduce((acc, cur) => {
+    if (cur % 2 !== 0) {
+      return acc
+    }
+
+    acc[cur] = pxToRem(cur)
+    return acc
+  }, {})
+  borderRadius["full"] = "9999px"
+
+  return borderRadius
+}
 
 module.exports = {
   content: Object.values(globEntries(paths.src + "/**/*.{html,js,jsx,ts,tsx}")),
@@ -31,7 +45,7 @@ module.exports = {
       },
     },
     extend: {
-      borderRadius,
+      borderRadius: generateBorderRadius(24),
       colors: {
         purple: {
           100: "#928CFF",
@@ -52,11 +66,11 @@ module.exports = {
         },
       },
       fontFamily: {
-        'ubuntu': ['Ubuntu', ...defaultTheme.fontFamily.sans],
+        'sans': ['Ubuntu', ...defaultTheme.fontFamily.sans],
       },
-      fontSize,
+      fontSize: generateFontSize(12, 100),
       spacing: {
-        "4.5": (18 / base) + "rem",
+        "4.5": pxToRem(18),
       },
       transitionDuration: {
         "DEFAULT": "300ms",
