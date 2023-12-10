@@ -37,13 +37,6 @@ module.exports = {
   content: Object.values(globEntries(paths.src + "/**/*.{html,js,jsx,ts,tsx}")),
   darkMode: "class",
   theme: {
-    container: {
-      screens: {
-        sm: "640px",
-        md: "768px",
-        lg: "940px",
-      },
-    },
     extend: {
       borderRadius: generateBorderRadius(24),
       colors: {
