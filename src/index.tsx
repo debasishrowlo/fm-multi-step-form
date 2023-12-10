@@ -183,16 +183,14 @@ const App = () => {
   }
 
   const toggleAddon = (index:number) => {
-    setAddons(addons.map((addon, addonIndex) => {
-      if (addonIndex !== index) {
-        return addon
-      }
-      
-      return {
-        ...addon,
-        isActive: !addon.isActive,
-      }
-    }))
+    setAddons([
+      ...addons.slice(0, index),
+      {
+        ...addons[index],
+        isActive: !addons[index].isActive,
+      },
+      ...addons.slice(index + 1),
+    ])
   }
 
   const handleBackButtonClick = () => {
@@ -202,6 +200,7 @@ const App = () => {
 
     const previousStep = step
     const nextStep = step - 1
+
     updateTransitionProps(previousStep, nextStep)
     setStep(nextStep)
   }
@@ -214,6 +213,7 @@ const App = () => {
 
     const previousStep = step
     const nextStep = step + 1
+
     updateTransitionProps(previousStep, nextStep)
     setStep(nextStep)
   }
@@ -267,7 +267,7 @@ const App = () => {
         <img src={bgSidebarMobile} className="w-full" />
       </div>
       <div className="h-screen flex items-center bg-gray-200">
-        <div className="container mx-auto p-0 relative z-10 h-screen flex flex-col md:h-auto md:my-auto md:p-4 md:flex-row md:bg-white md:rounded-16 md:shadow-2xl">
+        <div className="w-full max-w-[940px] mx-auto p-0 relative z-10 h-screen flex flex-col md:h-auto md:my-auto md:p-4 md:flex-row md:bg-white md:rounded-16 md:shadow-2xl">
           <div className="relative w-full md:max-w-[274px]">
             <img src={bgSidebarDesktop} className="hidden md:block" />
             <div className="py-8 flex justify-center space-x-4 md:absolute md:inset-0 md:block md:space-x-0 md:space-y-8">
@@ -412,7 +412,7 @@ const App = () => {
                 </Transition>
                 <Transition
                   show={step === 2}
-                  className="absolute inset-0 w-full max-h-full px-6 py-8 flex flex-col bg-white rounded-10 shadow-2xl md:px-0 md:shadow-none"
+                  className="absolute inset-0 w-full max-h-full px-6 py-8 flex flex-col bg-white rounded-10 shadow-2xl overflow-y-auto md:px-0 md:shadow-none"
                   {...commonTransitionProps}
                   {...transitionProps["2"]}
                 >
@@ -422,7 +422,7 @@ const App = () => {
                   <p className="text-16 leading-6 text-gray-400 md:mt-2">
                     You have the option of monthly or yearly billing.
                   </p>
-                  <div className="mt-6 space-y-3 md:mt-9 md:flex md:space-x-4.5 md:space-y-0 overflow-y-auto">
+                  <div className="mt-6 space-y-3 md:mt-9 md:flex md:space-x-4.5 md:space-y-0">
                     {plans.map((plan, index: number) => {
                       const isActive = index === selectedPlanIndex
                       const price = yearlyPlanActive
@@ -503,7 +503,7 @@ const App = () => {
                 </Transition>
                 <Transition
                   show={step === 3}
-                  className="absolute inset-0 max-h-full px-6 py-8 flex flex-col bg-white rounded-10 shadow-2xl overflow-y-hidden md:px-0 md:shadow-none"
+                  className="absolute inset-0 max-h-full px-6 py-8 flex flex-col bg-white rounded-10 shadow-2xl overflow-y-auto md:px-0 md:shadow-none"
                   {...commonTransitionProps}
                   {...transitionProps["3"]}
                 >
@@ -565,7 +565,7 @@ const App = () => {
                 </Transition>
                 <Transition
                   show={step === 4}
-                  className="absolute inset-0 max-h-full px-6 py-8 flex flex-col bg-white rounded-10 shadow-2xl overflow-y-hidden md:px-0 md:shadow-none"
+                  className="absolute inset-0 max-h-full px-6 py-8 flex flex-col bg-white rounded-10 shadow-2xl overflow-y-auto md:px-0 md:shadow-none"
                   {...commonTransitionProps}
                   {...transitionProps["4"]}
                 >
@@ -629,7 +629,7 @@ const App = () => {
                 </Transition>
                 <Transition
                   show={step === 5}
-                  className="absolute inset-0 max-h-full px-6 py-8 flex flex-col bg-white rounded-10 shadow-2xl overflow-y-hidden md:px-0 md:shadow-none"
+                  className="absolute max-h-full px-6 py-8 flex flex-col bg-white rounded-10 shadow-2xl md:inset-0 md:px-0 md:shadow-none"
                   {...commonTransitionProps}
                   {...transitionProps["5"]}
                 >
