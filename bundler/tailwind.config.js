@@ -64,6 +64,7 @@ module.exports = {
       fontSize: generateFontSize(12, 100),
       spacing: {
         "4.5": pxToRem(18),
+        "5.5": pxToRem(22),
       },
       transitionDuration: {
         "DEFAULT": "300ms",
